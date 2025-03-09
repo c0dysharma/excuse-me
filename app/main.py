@@ -2,6 +2,7 @@ import os
 import sys
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
 # Importing all models to ensure they are registered with SQLModel
@@ -27,6 +28,15 @@ logger.add(log_out_path, colorize=True, level="INFO")
 
 # Create a FastAPI application instance
 app = FastAPI()
+
+# Allow CORS for all origins
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 # Include the routers for different API endpoints
 app.include_router(generate_router)
