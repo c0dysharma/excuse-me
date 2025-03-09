@@ -22,6 +22,7 @@ def generate_excuse(args: GenerateRequest):
 
     data = {
         "excuse": res,
-        "prompt": prompt
+        "prompt": prompt,
+        "input": args.model_dump()
     }
     return JSONResponse(status_code=201, content=data)

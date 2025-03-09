@@ -11,8 +11,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-GENERATE_EXCUSE_PROMPT = PromptTemplate.from_template("""Generate a {type} WhatsApp/Slack text for a {job_role} who needs {days_off} days off from work. The excuse should be believable and professional so that it is acceptable to a manager.  
-{constraints}  
+GENERATE_EXCUSE_PROMPT = PromptTemplate.from_template("""Generate a {type} WhatsApp/Slack text for a person who needs {days_off} days off from work. The excuse should be believable and professional so that it is acceptable to a manager.  
 Ensure the excuse is realistic, polite, simple and justifiable while keeping it concise, not more than 30 words,  
 Generate text which are ready to sent and return only 1 text""")
 
@@ -30,6 +29,7 @@ if "GOOGLE_API_KEY" not in os.environ:
 
 
 def generate_prompt(args: GenerateRequest):
+    args = args.model_copy()
     args.type = excuse_map.get(args.type, "funny")
 
     return GENERATE_EXCUSE_PROMPT.format(**args.model_dump())
