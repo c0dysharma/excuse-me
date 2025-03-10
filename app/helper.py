@@ -1,7 +1,5 @@
-
-
 import os
-from langchain_openai import OpenAI
+from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
 from loguru import logger
@@ -35,7 +33,13 @@ def generate_prompt(args: GenerateRequest):
     return GENERATE_EXCUSE_PROMPT.format(**args.model_dump())
 
 
-open_ai_llm = OpenAI()
+open_ai_llm = ChatOpenAI(
+    model="gpt-3.5-turbo",
+    temperature=1,
+    max_tokens=None,
+    timeout=None,
+    max_retries=2,
+)
 
 gemini_ai_llm = ChatGoogleGenerativeAI(
     model="gemini-1.5-pro",
@@ -46,19 +50,50 @@ gemini_ai_llm = ChatGoogleGenerativeAI(
 )
 
 
-def open_ai_llm_call(prompt: str):
+def clean_output(output: str) -> str:
+    """
+    Clean the output from the LLM invoke method.
+
+    Args:
+        output (str): The raw output from the LLM invoke method.
+
+    Returns:
+        str: The cleaned output.
+    """
+    # Remove leading and trailing quotes and whitespace
+    cleaned_output = output.strip().strip('"')
+    return cleaned_output
+
+
+def open_ai_llm_call(prompt: str) -> str:
     try:
-        res = open_ai_llm.invoke(prompt)
+        res = open_ai_llm.invoke(prompt).content
+        cleaned_res = clean_output(res)
+        return cleaned_res
     except Exception as e:
         logger.error(e)
         raise Exception("Error getting response from LLM")
-    return res
 
 
-def gemini_ai_llm_call(prompt: str):
+def gemini_ai_llm_call(prompt: str) -> str:
     try:
-        res = gemini_ai_llm.invoke(prompt)
+        res = gemini_ai_llm.invoke(prompt).content
+        cleaned_res = clean_output(res)
+        return cleaned_res
     except Exception as e:
         logger.error(e)
         raise Exception("Error getting response from LLM")
-    return res.content
+
+
+def llm_call(prompt: str) -> dict:
+    provider = os.getenv("LLM_PROVIDER", "gemini")
+
+    if provider == "openai":
+        res = open_ai_llm_call(prompt)
+    else:
+        res = gemini_ai_llm_call(prompt)
+
+    return {
+        "content": res,
+        "provider": provider
+    }
