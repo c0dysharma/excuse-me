@@ -16,7 +16,7 @@ def generate_excuse(args: GenerateRequest):
     # do LLM call with the inputs and respond
     try:
         prompt = generate_prompt(args)
-        res = gemini_ai_llm_call(prompt)
+        res = open_ai_llm(prompt)
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
